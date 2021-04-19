@@ -9,12 +9,17 @@ const app = express();
 
 app.set('view engine', 'ejs');
 
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({
+  extended: true
+}));
 app.use(express.static("public"));
 
 
 
-mongoose.connect("mongodb://localhost:27017/todolistDB", {useNewUrlParser: true});
+mongoose.connect("mongodb://localhost:27017/todolistDB", {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+});
 
 
 
@@ -24,12 +29,7 @@ mongoose.connect("mongodb://localhost:27017/todolistDB", {useNewUrlParser: true}
 const itemsSchema = {
   name: String
 }
-/*const itemsSchema = new mongoose.Schema({
-  name:{
-  type: String,
-  required: [true, "Please enter some text"]
-},
-});*/
+
 
 // create model -> CAPITALASE THE FIRST LETTRE
 const Item = mongoose.model("Item", itemsSchema);
@@ -50,41 +50,64 @@ const item3 = new Item({
 
 const defaultItems = [item1, item2, item3];
 
-Item.insertMany(defaultItems, function(err){
-  if (err){
-    console.log(err);
-  }else{
-    console.log("initialisation OK");
-  }
-});
+
+
+
+
+
 
 app.get("/", function(req, res) {
 
-  res.render("list", {listTitle: "Today", newListItems: items});
+  Item.find({}, function(err, foundItems) {
+
+
+    if (foundItems.length === 0) {
+      Item.insertMany(defaultItems, function(err) {
+        if (err) {
+          console.log(err);
+        } else {
+          console.log("initialisation OK");
+        }
+      });
+
+      res.redirect("/");
+    } else {
+      res.render("list", {
+        listTitle: "Today",
+        newListItems: foundItems
+      });
+    }
+  });
+
+
 
 });
 
 
 
 
-app.post("/", function(req, res){
+app.post("/", function(req, res) {
 
-  const item = req.body.newItem;
+  const itemName = req.body.newItem;
+  const item = new Item({
+    name: itemName
+  });
 
-  if (req.body.list === "Work") {
-    workItems.push(item);
-    res.redirect("/work");
-  } else {
-    items.push(item);
-    res.redirect("/");
-  }
+  item.save();
+  res.redirect("/");
+
+
+
 });
 
-app.get("/work", function(req,res){
-  res.render("list", {listTitle: "Work List", newListItems: workItems});
+app.get("/work", function(req, res) {
+  res.render("list", {
+    listTitle: "Work List",
+    newListItems: workItems
+  });
 });
 
-app.get("/about", function(req, res){
+app.get("/about", function(req, res) {
   res.render("about");
 });
 

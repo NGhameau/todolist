@@ -96,7 +96,22 @@ app.post("/", function(req, res) {
   item.save();
   res.redirect("/");
 
+});
 
+app.post("/delete", function(req, res){
+  //console.log(req.body);
+  //console.log(req.body.checkbox);
+
+  const checkedItemId = req.body.checkbox;
+
+  Item.findByIdAndRemove(checkedItemId, function(err){
+    if (err){
+      console.log(err);
+    }else{
+      console.log("item removed");
+      res.redirect("/");
+    }
+  })
 
 });
 

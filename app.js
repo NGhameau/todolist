@@ -98,6 +98,7 @@ app.get("/:customListName", function(req, res) {
   }, function(err, foundList) {
     if (!err) {
       if (!foundList) {
+        console.log("create the list");
         //create a new list
 
         const list = new List({
@@ -109,6 +110,7 @@ app.get("/:customListName", function(req, res) {
 
         res.redirect("/"+customListName);
       } else {
+        console.log("render the list");
         //show an existing list
         res.render("list", {
           listTitle: customListName,
@@ -131,8 +133,22 @@ app.post("/", function(req, res) {
     name: itemName
   });
 
-  item.save();
-  res.redirect("/");
+
+  const listTitle = req.body.list; //use te name of the HTML element
+
+  if (listTitle === "Today"){
+    item.save();
+    res.redirect("/");
+  }else{
+    //console.log(listTitle);
+    List.findOne({name: listTitle}, function(err, foundList){
+      foundList.items.push(item);
+      foundList.save();
+      res.redirect("/"+listTitle);
+    })
+  }
+
+
 
 });
 

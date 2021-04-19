@@ -51,7 +51,15 @@ const item3 = new Item({
 const defaultItems = [item1, item2, item3];
 
 
+//new Schema for list
+const listSchema = ({
+  name: String,
+  items: [itemsSchema]
+});
 
+
+//create mongoose model
+const List = mongoose.model("List", listSchema);
 
 
 
@@ -78,10 +86,40 @@ app.get("/", function(req, res) {
       });
     }
   });
-
-
-
 });
+
+
+app.get("/:customListName", function(req, res) {
+  //console.log(req.params.customListName);
+  const customListName = req.params.customListName;
+
+  List.findOne({
+    name: customListName
+  }, function(err, foundList) {
+    if (!err) {
+      if (!foundList) {
+        //create a new list
+
+        const list = new List({
+          name: customListName,
+          items: defaultItems
+        });
+
+        list.save();
+
+        res.redirect("/"+customListName);
+      } else {
+        //show an existing list
+        res.render("list", {
+          listTitle: customListName,
+          newListItems: foundList.items
+        });
+      }
+    }
+
+  });
+});
+
 
 
 
@@ -98,16 +136,16 @@ app.post("/", function(req, res) {
 
 });
 
-app.post("/delete", function(req, res){
+app.post("/delete", function(req, res) {
   //console.log(req.body);
   //console.log(req.body.checkbox);
 
   const checkedItemId = req.body.checkbox;
 
-  Item.findByIdAndRemove(checkedItemId, function(err){
-    if (err){
+  Item.findByIdAndRemove(checkedItemId, function(err) {
+    if (err) {
       console.log(err);
-    }else{
+    } else {
       console.log("item removed");
       res.redirect("/");
     }
@@ -115,12 +153,8 @@ app.post("/delete", function(req, res){
 
 });
 
-app.get("/work", function(req, res) {
-  res.render("list", {
-    listTitle: "Work List",
-    newListItems: workItems
-  });
-});
+
+
 
 app.get("/about", function(req, res) {
   res.render("about");

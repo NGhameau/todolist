@@ -18,7 +18,7 @@ app.use(express.static("public"));
 
 
 mongoose.connect("mongodb+srv://admin-angie:test123@cluster0.gjrjw.mongodb.net/todolistDB", {
-//mongoose.connect("mongodb://localhost:27017/todolistDB", {
+  //mongoose.connect("mongodb://localhost:27017/todolistDB", {
   useNewUrlParser: true,
   useUnifiedTopology: true
 });
@@ -187,7 +187,7 @@ app.post("/delete", function(req, res) {
       },
       function(err, foundList) {
         if (!err) {
-          res.redirect("/"+ listTitle);
+          res.redirect("/" + listTitle);
         }
       });
 
@@ -204,6 +204,14 @@ app.get("/about", function(req, res) {
   res.render("about");
 });
 
-app.listen(3000, function() {
-  console.log("Server started on port 3000");
+
+
+let port = process.env.PORT;
+if (port == null || port == "") {
+  port = 3000;
+
+}
+
+app.listen(port, function() {
+  console.log("Server started on port " + port);
 });

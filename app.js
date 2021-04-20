@@ -3,6 +3,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
+const _ = require("lodash");
 
 
 const app = express();
@@ -16,7 +17,8 @@ app.use(express.static("public"));
 
 
 
-mongoose.connect("mongodb://localhost:27017/todolistDB", {
+mongoose.connect("mongodb+srv://admin-angie:test123@cluster0.gjrjw.mongodb.net/todolistDB", {
+//mongoose.connect("mongodb://localhost:27017/todolistDB", {
   useNewUrlParser: true,
   useUnifiedTopology: true
 });
@@ -91,7 +93,7 @@ app.get("/", function(req, res) {
 
 app.get("/:customListName", function(req, res) {
   //console.log(req.params.customListName);
-  const customListName = req.params.customListName;
+  const customListName = _.capitalize(req.params.customListName);
 
   List.findOne({
     name: customListName
@@ -108,9 +110,9 @@ app.get("/:customListName", function(req, res) {
 
         list.save();
 
-        res.redirect("/"+customListName);
+        res.redirect("/" + customListName);
       } else {
-        console.log("render the list");
+        console.log("render the list " + customListName);
         //show an existing list
         res.render("list", {
           listTitle: customListName,
@@ -136,15 +138,17 @@ app.post("/", function(req, res) {
 
   const listTitle = req.body.list; //use te name of the HTML element
 
-  if (listTitle === "Today"){
+  if (listTitle === "Today") {
     item.save();
     res.redirect("/");
-  }else{
+  } else {
     //console.log(listTitle);
-    List.findOne({name: listTitle}, function(err, foundList){
+    List.findOne({
+      name: listTitle
+    }, function(err, foundList) {
       foundList.items.push(item);
       foundList.save();
-      res.redirect("/"+listTitle);
+      res.redirect("/" + listTitle);
     })
   }
 
@@ -157,15 +161,39 @@ app.post("/delete", function(req, res) {
   //console.log(req.body.checkbox);
 
   const checkedItemId = req.body.checkbox;
+  const listTitle = req.body.listName;
 
-  Item.findByIdAndRemove(checkedItemId, function(err) {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log("item removed");
-      res.redirect("/");
-    }
-  })
+  if (listTitle === "Today") {
+    Item.findByIdAndRemove(checkedItemId, function(err) {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log("item " + checkedItemId + " removed from Today's list");
+        res.redirect("/");
+      }
+    });
+
+  } else {
+    //delete request comming from a custom list
+    //remove document from an array
+    List.findOneAndUpdate({
+        name: listTitle
+      }, {
+        $pull: {
+          items: {
+            _id: checkedItemId
+          }
+        }
+      },
+      function(err, foundList) {
+        if (!err) {
+          res.redirect("/"+ listTitle);
+        }
+      });
+
+  }
+
+
 
 });
 

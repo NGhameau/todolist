@@ -16,11 +16,8 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(express.static("public"));
 
-//mongoose.connect("mongodb+srv://".process.env.USER_DB+":"+process.env.PW_DB+"@"+process.env.PATH_DB+"/todolistDB", {
+
 mongoose.connect("mongodb+srv://"+process.env.USER_DB+":"+process.env.PW_DB+"@"+process.env.PATH_DB+"/todolistDB", {
-//mongoose.connect("mongodb+srv://admin-angie:test123@cluster0.gjrjw.mongodb.net/todolistDB", {
-//mongoose.connect("mongodb://admin:XCPprh44742@node84003-env-8185252:27017/todolistDB", {
-//mongoose.connect("mongodb://mongo:27017/todolistDB", {
   useNewUrlParser: true,
   useUnifiedTopology: true
 });
